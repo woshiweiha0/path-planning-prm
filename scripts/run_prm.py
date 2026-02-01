@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from src.environment_2d import Environment2D
 from src.prm import prm_plan
+from src.postprocess import shortcut_path, path_length
 
 
 def main():
@@ -47,12 +48,23 @@ def main():
 
     # draw path if found
     if res.path is not None:
-        px = [p[0] for p in res.path]
-        py = [p[1] for p in res.path]
-        ax.plot(px, py, color = "red", linewidth = 3)
-        print(f"PRM found path length = {res.path_length:.3f}")
+        # 1) post-process
+        raw_path = res.path
+        short_path = shortcut_path(env, raw_path, maxrep=800, segment_step=0.05, seed=seed)
+
+        raw_len = path_length(raw_path)
+        short_len = path_length(short_path)
+
+        # 2) plot final (shortcutted) path thick red
+        px = [p[0] for p in short_path]
+        py = [p[1] for p in short_path]
+        ax.plot(px, py, color="red", linewidth=3)
+
+        print(f"PRM raw path length       = {raw_len:.3f}")
+        print(f"PRM shortcut path length  = {short_len:.3f}")
     else:
         print("PRM did not find a path.")
+
 
     # stats
     # count edges (undirected count)
